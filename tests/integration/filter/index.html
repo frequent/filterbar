@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>jQuery Mobile Listview Integration Test</title>
+
+	<script src="../../../external/requirejs/require.js"></script>
+	<script src="../../../js/requirejs.config.js"></script>
+	<script src="../../../js/jquery.tag.inserter.js"></script>
+	<script src="../../jquery.setNameSpace.js"></script>
+	<script src="../../jquery.testHelper.js"></script>
+	<script src="../../../external/qunit.js"></script>
+  <script type="text/javascript">
+    // redirects from push-state-tests.html
+    $( document ).bind( 'mobileinit', function(){
+      $.testHelper.setPushState();
+    });
+  </script>
+	<script>
+		$.testHelper.asyncLoad([
+			[
+				"jquery.mobile.navigation",
+				"widgets/listview",
+				"widgets/filter",
+				"widgets/listview.autodividers",
+				"widgets/toolbar",
+				"widgets/collapsible",
+				"jquery.mobile.buttonMarkup"
+			],
+			[ "jquery.mobile.init" ],
+			[ "filter_core.js" ]
+		]);
+	</script>
+
+	<link rel="stylesheet"  href="../../../css/themes/default/jquery.mobile.css" />
+	<link rel="stylesheet" href="../../../external/qunit.css"/>
+
+	<script src="../../swarminject.js"></script>
+</head>
+<body>
+
+<h1 id="qunit-header">jQuery Mobile Filter Integration Test</h1>
+<h2 id="qunit-banner"></h2>
+<h2 id="qunit-userAgent"></h2>
+<ol id="qunit-tests">
+</ol>
+
+<!-- Search bar filter -->
+<div data-nstest-role="page" id='search-filter-test'>
+	<div data-nstest-role="header">
+		<h1>Split List View</h1>
+	</div>
+	<div data-nstest-role="content">
+		<ul data-nstest-role="listview" data-nstest-filter="true">
+			<li>a is for aquaman</li>
+			<li>b is for batman</li>
+			<li>c is for catwoman</li>
+			<li>d is for darkwing</li>
+		</ul>
+	</div>
+</div>
+
+<!-- Search bar filter -->
+<div data-nstest-role="page" id='search-customfilter-test'>
+	<div data-nstest-role="header">
+		<h1>Filtered List View</h1>
+	</div>
+	<div data-nstest-role="content">
+		<ul data-nstest-role="listview" data-nstest-filter="true">
+			<li>a is for aquaman</li>
+			<li>b is for batman</li>
+			<li>c is for catwoman</li>
+			<li>d is for darkwing</li>
+		</ul>
+	</div>
+</div>
+
+<!-- Search bar filter with list-dividers -->
+<div data-nstest-role="page" id='search-filter-with-dividers-test'>
+	<div data-nstest-role="header">
+		<h1>Split List View</h1>
+	</div>
+	<div data-nstest-role="content">
+		<ul data-nstest-role="listview" data-nstest-filter="true">
+			<li data-nstest-role="list-divider">a</li>
+			<li>a is for aquaman</li>
+			<li data-nstest-role="list-divider">b</li>
+			<li>b is for batman</li>
+			<li data-nstest-role="list-divider">c</li>
+			<li>c is for catwoman</li>
+			<li data-nstest-role="list-divider">d</li>
+			<li>d is for darkwing</li>
+		</ul>
+	</div>
+</div>
+
+<!-- Search bar filter inset -->
+<div data-nstest-role="page" id='search-filter-inset-test'>
+	<div data-nstest-role="header">
+		<h1>Inset Filter List View</h1>
+	</div>
+	<div data-nstest-role="content">
+		<ul data-nstest-role="listview" data-nstest-filter="true" data-nstest-inset="true">
+			<li>a is for aquaman</li>
+			<li>b is for batman</li>
+			<li>c is for catwoman</li>
+			<li>d is for darkwing</li>
+		</ul>
+	</div>
+</div>
+
+<!-- Search bar filter -->
+<div data-nstest-role="page" id='search-filter-reveal-test'>
+    <div data-nstest-role="header">
+        <h1>Reveal Listview</h1>
+    </div>
+    <div data-nstest-role="content">
+        <ul data-nstest-role="listview" data-nstest-filter="true" data-nstest-filter-reveal="true">
+            <li>Acura</a></li>
+            <li>Audi</li>
+            <li>BMW</li>
+            <li>Cadillac</li>
+            <li>Chrysler</li>
+            <li>Dodge</li>
+            <li>Ferrari</li>
+            <li>Ford</li>
+            <li>GMC</li>
+            <li>Honda</li>
+            <li>Hyundai</li>
+            <li>Infiniti</li>
+            <li>Jeep</li>
+            <li>Kia</li>
+            <li>Lexus</li>
+            <li>Mini</li>
+            <li>Nissan</li>
+            <li>Porsche</li>
+            <li>Subaru</li>
+            <li>Toyota</li>
+            <li>Volkswagon</li>
+            <li>Volvo</li>
+        </ul>
+    </div>
+</div>
+
+<!-- Programmatically generated list items !-->
+<div data-nstest-role="page" id="programmatically-generated-list">
+	<ul data-nstest-role="listview" data-nstest-inset="true" id="programmatically-generated-list-items"></ul>
+</div>
+
+<!-- Removing items from list -->
+<div data-nstest-role="page" id='removing-items-from-list-test'>
+	<div data-nstest-role="header">
+		<h1>Basic List View</h1>
+	</div>
+	<div data-nstest-role="content">
+		<ul data-nstest-role="listview" data-nstest-inset="true">
+			<li>Item 1</li>
+			<li>Item 2</li>
+			<li>Item 3</li>
+			<li>Item 4</li>
+		</ul>
+	</div>
+</div>
+
+<!-- Rounded corners inset list with variable items -->
+<div data-nstest-role="page" id='corner-rounded-test'>
+	<div data-nstest-role="header">
+		<h1>Basic List View</h1>
+	</div>
+	<div data-nstest-role="content">
+		<ul data-nstest-role="listview" data-nstest-inset="true">
+		</ul>
+	</div>
+</div>
+
+<div id="list-inset-filter-prototype" data-nstest-theme="b">
+	<ul data-nstest-role="listview" data-nstest-filter="true">
+		<li>foo</li>
+		<li>bar</li>
+	</ul>
+</div>
+
+<div id="list-inset-filter-data-attr" data-nstest-theme="b">
+	<ul data-nstest-role="listview" data-nstest-filter="true" data-nstest-inset="true">
+		<li>foo</li>
+		<li>bar</li>
+	</ul>
+</div>
+
+</body>
+</html>

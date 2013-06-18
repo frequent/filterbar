@@ -1,0 +1,35 @@
+{
+    "name": "jquerymobile-filterbar",
+    "title": "jQuery Mobile filter widget",
+    "description": "Generic filter widget for jQuery Mobile, based on listview filter extension.",
+    "keywords": [
+        "jQuery",
+        "Mobile",
+        "Filter"
+    ],
+    "version": "0.1.0",
+    "author": {
+        "name": "Sven Franck",
+        "url": "https://github.com/frequent"
+    },
+    "maintainers": [
+        {
+            "name": "Sven Franck",
+            "email": "svenfranck@yahoo.com",
+            "url": "https://github.com/frequent"
+        }
+    ],
+    "licenses": [
+        {
+            "type": "MIT",
+            "url": "https://github.com/jquery/jquery-color/blob/2.1.2/MIT-LICENSE.txt"
+        }
+    ],
+    "bugs": "https://github.com/frequent/filterbar/issues",
+    "homepage": "http://www.franckreich.de/jqm/filterbar/demo.html",
+    "docs": "https://github.com/frequent/filterbar/",
+    "dependencies": {
+        "jquery": ">=1.5",
+        "jquery mobile": ">=1.4"
+    }
+}
