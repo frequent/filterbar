@@ -17,55 +17,87 @@ define( [ "jquery", "./forms/textinput" ], function( jQuery ) {
   $.widget("mobile.filterbar", $.mobile.widget, $.extend( {
 
       options: {
-        filterTheme: null,
-        filterPlaceholder: null,
-        filterReveal: false,
-        filterCallback: defaultCallback,
-        filterInset: false,
-        filterTarget: null,       // class, append filter to
-        filterItemSelector: null  // class, wrapper for random filterable datasets
+        theme: "a",
+        placeholder: "Filter items...",
+        reveal: false,
+        callback: defaultCallback,
+        inset: false,
+        enhance: true,
+        target: null,
+        selector: null
       },
-      
-      _onKeyUp: function(/* e */) {
-        var search = this._search,
-          o = this.options,
-          el = this.element,
-          val = search[ 0 ].value.toLowerCase(),
-          filterItems = null,
-          lastval = search.jqmData( "lastval" ) + "",
-          childItems = false,
-          itemtext = "",
-          item, i,
-          // Check if a custom filter callback applies
-          isCustomcallback = o.filterCallback !== defaultCallback,
-          getFilterableItems = o.filterItemSelector === undefined ? 
-            el.find("> li, > option, tbody tr, tbody th, .ui-controlgroup-controls .ui-btn") :
-              $("." + o.filterItemSelector).children(),
-          fi = getFilterableItems,
-          getAttrFixed = $.mobile.getAttribute;
 
-        if ( lastval && lastval === val ) {
-          // Execute the handler only once per value change
-          return;
+      _onKeyUp: function() {
+        var self = this,
+          search = self._search[ 0 ],
+          o = self.options;
+        
+        if (o.timer !== undefined) {
+          window.clearTimeout(o.timer);
         }
 
-        this._trigger( "beforefilter", "beforefilter", { input: search[ 0 ] } );
+        self._trigger( "beforefilter", "beforefilter", { input: search } );
+          
+        o.timer = window.setTimeout(function() {
+          self._filterItems( search )
+        }, 500);
+      },
 
-        // Change val as lastval for next execution
-        search.jqmData( "lastval" , val );
+      _getFilterableItems: function() {
+        var self = this,
+          el = self.element,
+          o = self.options,
+          items = [];
+
+        if (typeof o.selector === "string") {
+          items = $("." + o.selector).children();
+        } else {
+          items = el.find("> li, > option, tbody tr, .ui-controlgroup-controls .ui-btn");
+        }
+        return items;
+      },
+      
+      _setFilterableItems: function(val, lastval) {
+        var self = this,
+          o = self.options,
+          filterItems = [],
+          isCustomcallback = o.callback !== defaultCallback,
+          _getFilterableItems = self._getFilterableItems();
+        
         if ( isCustomcallback || val.length < lastval.length || val.indexOf( lastval ) !== 0 ) {
 
           // Custom filter callback applies or removed chars or pasted something totally different, check all items
-          filterItems = getFilterableItems;
+          filterItems = _getFilterableItems;
         } else {
 
           // Only chars added, not removed, only use visible subset
-          filterItems = getFilterableItems.filter( ":not(.ui-screen-hidden)" );
+          filterItems = _getFilterableItems.filter( ":not(.ui-screen-hidden)" );
 
-          if ( !filterItems.length && o.filterReveal ) {
-            filterItems = getFilterableItems.filter( ".ui-screen-hidden" );
+          if ( !filterItems.length && o.reveal ) {
+            filterItems = _getFilterableItems.filter( ".ui-screen-hidden" );
           }
         }
+        return filterItems;
+      },
+      
+      _filterItems: function( search ){
+        var self = this,
+          el = self.element,
+          o = self.options,
+          getAttrFixed = $.mobile.getAttribute,
+          val = search.value.toLowerCase(),
+          lastval = getAttrFixed( search, "lastval", true ) + "",
+          filterItems = self._setFilterableItems(val, lastval),
+          _getFilterableItems = self._getFilterableItems(),
+          childItems = false,
+          itemtext = "",
+          item,
+          i;
+
+        self._setOption("timer", undefined);
+        
+        // Change val as lastval for next execution
+        search.setAttribute( "data-" + $.mobile.ns + "lastval" , val );
 
         if ( val ) {
 
@@ -75,15 +107,15 @@ define( [ "jquery", "./forms/textinput" ], function( jQuery ) {
           for ( i = filterItems.length - 1; i >= 0; i-- ) {
             item = $( filterItems[ i ] );
             itemtext = getAttrFixed(filterItems[ i ], "filtertext", true) || item.text();
-            
-            if ( item.is( "li:jqmData(role=list-divider)" ) ) {
+
+            if ( item.is( ".ui-li-divider" ) ) {
 
               item.toggleClass( "ui-filter-hidequeue" , !childItems );
 
               // New bucket!
               childItems = false;
 
-            } else if ( o.filterCallback( itemtext, val, item ) ) {
+            } else if ( o.callback( itemtext, val, item ) ) {
 
               //mark to be hidden
               item.toggleClass( "ui-filter-hidequeue" , true );
@@ -94,6 +126,17 @@ define( [ "jquery", "./forms/textinput" ], function( jQuery ) {
             }
           }
 
+          self._toggleFilterableItems( filterItems, o.reveal , true);
+        } else {
+          self._toggleFilterableItems( filterItems, o.reveal );
+        }
+
+        self._addFirstLastClasses( _getFilterableItems, self._getVisibles( _getFilterableItems, false ), false );
+      },
+      
+      _toggleFilterableItems: function( filterItems, reveal, isVal )  {
+
+        if (isVal) {
           // Show items, not marked to be hidden
           filterItems
             .filter( ":not(.ui-filter-hidequeue)" )
@@ -104,75 +147,116 @@ define( [ "jquery", "./forms/textinput" ], function( jQuery ) {
             .filter( ".ui-filter-hidequeue" )
             .toggleClass( "ui-screen-hidden", true )
             .toggleClass( "ui-filter-hidequeue", false );
-
         } else {
-
           //filtervalue is empty => show all
-          filterItems.toggleClass( "ui-screen-hidden", !!o.filterReveal );
+          filterItems.toggleClass( "ui-screen-hidden", !!reveal );
         }
-
-        this._addFirstLastClasses( fi, this._getVisibles( fi, false ), false );
       },
       
-      _create: function () {
-        var el = this.element[0],
-          o = this.options,
-          getAttrFixed = $.mobile.getAttribute;
+      _enhance: function () {
+        var self = this,
+          el = this.element,
+          o = self.options,
+          wrapper = $( "<div>", {
+            "class": "ui-filter ",
+            "role": "search"
+          }),
+          search = $( "<input>", {
+            placeholder: o.placeholder
+          })
+          .attr( "data-" + $.mobile.ns + "type", "search" )
+          .appendTo( wrapper )
+          .textinput();
 
-        // only read options on create
-        o.filterTheme = getAttrFixed(el, "theme", true) || "a";
-        o.filterPlaceholder = getAttrFixed(el, "placeholder", true) || "Filter items...";
-        o.filterTarget = getAttrFixed(el, "target", true);
-        o.filterInset = getAttrFixed(el, "inset", true) || false;
-        o.filterItemSelector = getAttrFixed(el, "itemSelector", true) || undefined;
-
-        this.refresh(true);
-      },
-      
-      refresh: function (create) {
-        var el, wrapper, search, items,
-          o = this.options;
-
-        el = this.element;
-
-        // filterable elements
-        items = o.filterItemSelector === undefined ?
-          el.find("> li, > option, tbody tr, tbody th, .ui-controlgroup-controls .ui-btn") :
-            $("." + o.filterItemSelector).children();
-        
-        if ( o.filterReveal ) {
-          items.addClass( "ui-screen-hidden" );
-        }
-
-        // use a <div> to allow filters inside forms (we never submit anyway)
-        wrapper = $( "<div>", {
-          "class": "ui-filter ",
-          "role": "search"
-        });
-        search = $( "<input>", {
-          placeholder: o.filterPlaceholder
-        })
-        .attr( "data-" + $.mobile.ns + "type", "search" )
-        .jqmData( "lastval", "" )
-        .appendTo( wrapper )
-        .textinput();
-
-        this._on( search, { keyup: "_onKeyUp", change: "_onKeyUp", input: "_onKeyUp" } );
-
-        $.extend( this, {
-          _search: search
-        });
-
-        if ( o.filterInset ) {
+        if ( o.inset ) {
           wrapper.addClass( "ui-filter-inset" );
         }
 
-        if ( o.filterTarget) {
-          wrapper.prependTo( $("." + o.filterTarget +"") );
+        if ( typeof o.target === "string" ) {
+          wrapper.prependTo( $( "." + o.target + "" ) );
         } else {
           wrapper.insertBefore( el );
         }
+        
+        return search;
+      },
+
+      _create: function() {
+        var self = this,
+          o = self.options,
+          search,
+          items = self._getFilterableItems();
+        
+        if ( o.reveal ) {
+          items.addClass( "ui-screen-hidden" );
+        }
+        
+        self._setOption("timer", undefined);
+
+        if (o.enhance) {
+          search = self._enhance();
+        } else {
+          search = self.element.find("input");
+        }
+
+        // "reset"
+        search.attr("data-" + $.mobile.ns + "-lastval", "");
+
+        self._on( search, { keyup: "_onKeyUp", change: "_onKeyUp", input: "_onKeyUp" } );
+        
+        $.extend( self, {
+          _search: search
+        });
+        
+      },
+
+      refresh: function (create) {
+      
+      },
+
+      _setOptions: function( options ) {
+        var self = this,
+          key;
+
+        for ( key in options ) {
+          self._setOption( key, options[ key ] );
+        }
+
+        return self;
+      },
+      
+      _setOption: function( key, value ) {
+        var self = this;
+
+        self.options[ key ] = value;
+
+        if ( key === "disabled" ) {
+          self.widget()
+            .toggleClass( self.widgetFullName + "-disabled ui-state-disabled", !!value )
+            .attr( "aria-disabled", value );
+          self.hoverable.removeClass( "ui-state-hover" );
+          self.focusable.removeClass( "ui-state-focus" );
+        }
+
+        return self;
+      },
+      
+      widget: function() {
+        return this.filterbar;
+      },
+      
+      enable: function() {
+        return this._setOption( "disabled", false );
+      },
+
+      disable: function() {
+        return this._setOption( "disabled", true );
+      }, 
+      
+      destroy: function() {
+        // red button
       }
+
   }, $.mobile.behaviors.addFirstLastClasses ) );
 
   $.mobile.filterbar.initSelector = ':jqmData(filter="true")';
