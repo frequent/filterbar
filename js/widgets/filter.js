@@ -40,7 +40,7 @@ define( [ "jquery", "./forms/textinput" ], function( jQuery ) {
           
         o.timer = window.setTimeout(function() {
           self._filterItems( search )
-        }, 500);
+        }, 250);
       },
 
       _getFilterableItems: function() {
@@ -237,7 +237,6 @@ define( [ "jquery", "./forms/textinput" ], function( jQuery ) {
           self.hoverable.removeClass( "ui-state-hover" );
           self.focusable.removeClass( "ui-state-focus" );
         }
-
         return self;
       },
       
@@ -254,7 +253,9 @@ define( [ "jquery", "./forms/textinput" ], function( jQuery ) {
       }, 
       
       destroy: function() {
-        // red button
+        var self = this;
+        self.element.parents( ".ui-filter" ).remove();
+        self._destroy();
       }
 
   }, $.mobile.behaviors.addFirstLastClasses ) );

@@ -6895,7 +6895,7 @@ $.mobile._enhancer.add( "mobile.textinput" );
           
         o.timer = window.setTimeout(function() {
           self._filterItems( search )
-        }, 500);
+        }, 250);
       },
 
       _getFilterableItems: function() {
@@ -7092,7 +7092,6 @@ $.mobile._enhancer.add( "mobile.textinput" );
           self.hoverable.removeClass( "ui-state-hover" );
           self.focusable.removeClass( "ui-state-focus" );
         }
-
         return self;
       },
       
@@ -7109,7 +7108,9 @@ $.mobile._enhancer.add( "mobile.textinput" );
       }, 
       
       destroy: function() {
-        // red button
+        var self = this;
+        self.element.parents( ".ui-filter" ).remove();
+        self._destroy();
       }
 
   }, $.mobile.behaviors.addFirstLastClasses ) );
