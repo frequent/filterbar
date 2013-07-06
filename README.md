@@ -26,15 +26,12 @@ for JQM to filter. For example, this should work:
 
 ### Changes:  
 
-## 0.1.3
+#### 0.1.3
 - added `data-mini` option.
 - prefixed `reveal`, `placeholder`, `theme` and `callback` with **filter** for backwards compatability
 - fixed default Qunit tests, now adding more... 
 
-## 0.1.2
-- 
-
-## 0.1.1 (initial commit)
+#### 0.1.1 (initial commit)
 - Wrapping `<form>` is now a wrapping `div` so filters can be included inside forms.
 - The `itemSelector` option can be set on multiple datasets, so it is possible to use a single filter for
 multiple datasets (like filtering a list in a panel and a group of icons in the content section).
