@@ -40,10 +40,9 @@ Options:
 Some options are inherited from the element the filter is declard upon. 
 
 The following options can be set:
-- `data-filterTheme` = theme to style the filter (default `a`)
-- `data-filterPlacehodler` = text to display as placeholder (default `filter items...`)
-- `data-filterReveal` = whether to use the normal filter or autocomplete (default `false`)
-- `data-filterCallback` = whether a custom callback is supplied (default `false`)
+- `data-filter-theme` = theme to style the filter (default `a`)
+- `data-filter-placeholder` = text to display as placeholder (default `filter items...`)
+- `data-filter-reveal` = whether to use the normal filter or autocomplete (default `false`)
 - `data-inset` = whether to inset the textinput (default `true`)
 - `data-target` (NEW, class, e.g. `data-target="foo"`) = where to appended the filter
 - `data-itemSelector` (NEW, class, e.g. `data-itemSelector="foo"`) = wrapper(s) containing elements to filter.
