@@ -9,7 +9,7 @@
 
 	$.mobile.defaultTransition = "none";
 
-  module( "Search Filter" );
+  module( "Listview Search Filter" );
 
 	var searchFilterId = "#search-filter-test";
 
@@ -19,14 +19,14 @@
 			function() {
 				$.mobile.changePage(searchFilterId);
 			},
-
 			function() {
-				$searchPage.find('input').val('at');
-				$searchPage.find('input').trigger('change');
-
-				deepEqual($searchPage.find('li.ui-screen-hidden').length, 2);
-				start();
-			}
+        $searchPage.find('input').val('at');
+        $searchPage.find('input').trigger('change');
+				setTimeout(function() {
+          deepEqual($searchPage.find('li.ui-screen-hidden').length, 2);
+        start();
+        }, 500);
+      }
 		]);
 	});
 
@@ -36,33 +36,31 @@
 			function() {
 				$.mobile.changePage(searchFilterId);
 			},
-
 			function() {
 				$searchPage.find('input').val('a');
 				$searchPage.find('input').trigger('change');
-
 				deepEqual($searchPage.find("li[style^='display: none;']").length, 0);
 				start();
 			}
 		]);
 	});
 
-    asyncTest( "Filter works fine with \\W- or regexp-special-characters", function() {
-        var $searchPage = $(searchFilterId);
-        $.testHelper.pageSequence([
-            function() {
-                $.mobile.changePage(searchFilterId);
-            },
-
-            function() {
-                $searchPage.find('input').val('*');
-                $searchPage.find('input').trigger('change');
-
-                deepEqual($searchPage.find('li.ui-screen-hidden').length, 4);
-                start();
-            }
-        ]);
-    });
+  asyncTest( "Filter works fine with \\W- or regexp-special-characters", function() {
+    var $searchPage = $(searchFilterId);
+    $.testHelper.pageSequence([
+      function() {
+        $.mobile.changePage(searchFilterId);
+      },
+      function() {
+        $searchPage.find('input').val('*');
+        $searchPage.find('input').trigger('change');
+        setTimeout(function() {
+          deepEqual($searchPage.find('li.ui-screen-hidden').length, 4);
+          start();
+        }, 500);
+      }
+    ]);
+  });
 
 	asyncTest( "event filterbarbeforefilter firing", function() {
 		var $searchPage = $( searchFilterId );
@@ -76,16 +74,17 @@
 				$searchPage.on( "filterbarbeforefilter", function( e ) {
 					beforeFilterCount += 1;
 				});
-				$searchPage.find( 'input' ).val( "a" );
+
+        $searchPage.find( 'input' ).val( "a" );
+        $searchPage.find( 'input' ).trigger('input');
+        $searchPage.find( 'input' ).trigger('keyup');
+        $searchPage.find( 'input' ).trigger('change');
+        equal( beforeFilterCount, 1, "filterbarbeforefilter should fire only once for the same value" );
+        $searchPage.find( 'input' ).val( "ab" );
 				$searchPage.find( 'input' ).trigger('input');
 				$searchPage.find( 'input' ).trigger('keyup');
-				$searchPage.find( 'input' ).trigger('change');
-				equal( beforeFilterCount, 1, "filterbarbeforefilter should fire only once for the same value" );
-				$searchPage.find( 'input' ).val( "ab" );
-				$searchPage.find( 'input' ).trigger('input');
-				$searchPage.find( 'input' ).trigger('keyup');
-				equal( beforeFilterCount, 2, "filterbarbeforefilter should fire twice since value has changed" );
-				start();
+        equal( beforeFilterCount, 2, "filterbarbeforefilter should fire twice since value has changed" );
+        start();
 			}
 		]);
 	});
@@ -111,7 +110,7 @@
 					//there should be two list entries that are not list dividers and hidden
 					deepEqual($searchPage.find('li.ui-screen-hidden:not(:jqmData(role=list-divider))').length, 2);
 					start();
-				}, 1000);
+				}, 500);
 			}
 		]);
 	});
@@ -130,7 +129,7 @@
 					deepEqual($('.ui-page-active input').val(), 'a');
 					deepEqual($('.ui-page-active li[style^="display: none;"]').length, 0);
 					start();
-				}, 1000);
+				}, 500);
 			}
 		]);
 	});
@@ -152,7 +151,7 @@
 					deepEqual($page.find('li:jqmData(role=list-divider):hidden + li:not(:jqmData(role=list-divider)):hidden').length, 2);
 					deepEqual($page.find('li:jqmData(role=list-divider):not(:hidden) + li:not(:jqmData(role=list-divider)):not(:hidden)').length, 2);
 					start();
-				}, 1000);
+				}, 500);
 			}
 		]);
 	});
@@ -209,18 +208,18 @@
 			this._refreshCornersCount = 0;
 			this._refreshCornersFn = $.mobile.filterbar.prototype._addFirstLastClasses;
 
-			this.startTest = function() {
-				return this._refreshCornersCount === 1;
-			};
+			//this.startTest = function() {
+			//	return this._refreshCornersCount === 1;
+			//};
 
 			// _refreshCorners is the last method called in the filter loop
 			// so we count the number of times _refreshCorners gets invoked to stop the test
 			$.mobile.filterbar.prototype._addFirstLastClasses = function() {
 				self._refreshCornersCount += 1;
 				self._refreshCornersFn.apply( this, arguments );
-				if ( self.startTest() ) {
-					start();
-				}
+				//if ( self.startTest() ) {
+        //  start();
+				//}
 			}
 		},
 		teardown: function() {
@@ -234,14 +233,12 @@
 			expectedCount = 2 * listPage.find("li").length;
 		expect( 1 );
 
-		this.startTest = function() {
-      // XXX NOTE: changed this to 2x, because two changes, trigger 2x _onKeyUp
-      // and 2x addFirstLastClasses. I never reach 3 with the code as-is
-			if ( this._refreshCornersCount === 2 ) {
-				equal( filterCallbackCount, expectedCount, "filterCallback should be called exactly "+ expectedCount +" times" );
-			}
-			return this._refreshCornersCount === 2;
-		}
+		//this.startTest = function() {
+    //  if ( this._refreshCornersCount === 3 ) {
+			//	equal( filterCallbackCount, expectedCount, "filterCallback should be called exactly "+ expectedCount +" times" );
+			//}
+			//return this._refreshCornersCount === 3;
+		//}
 
 		$.testHelper.pageSequence( [
 			function(){
@@ -256,49 +253,64 @@
 			function() {
 				// set the listview instance callback
 				listPage.find( "ul" ).filterbar( "option", "filterCallback", function( text, searchValue, item ) {
-					filterCallbackCount += 1;
-
+          filterCallbackCount += 1;
 					return text.toString().toLowerCase().indexOf( searchValue ) === -1;
 				});
 
 				// trigger a change in the search filter
 				listPage.find( "input" ).val( "at" ).trigger( "change" );
-				listPage.find( "input" ).val( "atw" ).trigger( "change" );
+        // need to wait because of the filterdelay
+        window.setTimeout(function() {
+          listPage.find( "input" ).val( "atw" ).trigger( "change" );
+        },500);
+			},
 
-			}
+      function() {
+        equal( filterCallbackCount, expectedCount, "filterCallback should be called exactly "+ expectedCount +" times" );
+        start();
+      }
 		]);
 	});
 
-	asyncTest( "filterCallback can be altered after widget creation", function(){
-		var listPage = $( "#search-customfilter-test" );
-		expect( listPage.find("li").length );
+  asyncTest( "filterCallback can be altered after widget creation", function(){
+    var listPage = $( "#search-customfilter-test" ),
+      filterChangedCallbackCount = 0,
+      expectedCount = 1 * listPage.find("li").length,
+      runtest;
+    expect( 1 );
 
-		$.testHelper.pageSequence( [
-			function(){
-				//reset for relative url refs
-				$.mobile.changePage( home );
-			},
+    $.testHelper.pageSequence( [
+      function(){
+        //reset for relative url refs
+        $.mobile.changePage( home );
+      },
 
-			function() {
-				$.mobile.changePage( "#search-customfilter-test" );
-			},
+      function() {
+        $.mobile.changePage( "#search-customfilter-test" );
+      },
 
-			function() {
-				// set the listview instance callback
-				listPage.find( "ul" ).filterbar( "option", "filterCallback", function() {
-					ok( true, "custom callback invoked" );
-				});
+      function() {
+				// set the filter instance callback
+        listPage.find( "ul" ).filterbar( "option", "filterCallback", function() {
+          filterChangedCallbackCount += 1;
+        });
 
-				// trigger a change in the search filter
-				listPage.find( "input" ).val( "foo" ).trigger( "change" );
-			}
-		]);
-	});
+        listPage.find( "input" ).val( "foo" )
+        listPage.find( "input" ).trigger( "change" );
+      },
+      
+      function() {
+        equal( filterChangedCallbackCount, expectedCount, "filterChangeCallback should be called exactly "+ expectedCount +" times" );
+        start();
+      }
+    ]);
+  });
 
 	module( "Search Filter with filterReveal==true" );
 
 	asyncTest( "Filter downs results when the user enters information", 3, function() {
 		var $searchPage = $( "#search-filter-reveal-test" );
+
 		$.testHelper.pageSequence([
 			function() {
 				$.mobile.changePage( $searchPage );
@@ -310,17 +322,19 @@
 
 			function() {
 				$searchPage.find( 'input' ).val( 'a' );
-				$searchPage.find( 'input' ).trigger('change');
-
-				deepEqual( $searchPage.find('li.ui-screen-hidden').length, 11);
+        $searchPage.find( 'input' ).trigger('change');
+        window.setTimeout(function() {
+          deepEqual( $searchPage.find('li.ui-screen-hidden').length, 11);  
+        },500);
 			},
 
 			function() {
 				$searchPage.find( 'input' ).val( '' );
-				$searchPage.find( 'input' ).trigger('change');
-
-				deepEqual( $searchPage.find('li.ui-screen-hidden').length, 22);
-				start();
+        $searchPage.find( 'input' ).trigger('change');
+        window.setTimeout(function() {
+          deepEqual( $searchPage.find('li.ui-screen-hidden').length, 22);
+          start();
+        },500);
 			}
 		]);
 	});

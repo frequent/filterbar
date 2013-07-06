@@ -6864,29 +6864,41 @@ $.mobile._enhancer.add( "mobile.textinput" );
 (function( $, undefined ) {
   "use strict";
 
-  // TODO rename callback/deprecate and default to the item itself as the first argument
-  var defaultCallback = function( text, searchValue /*, item */) {
+  // TODO rename filterCallback/deprecate and default to the item itself as the first argument
+  var defaultfilterCallback = function( text, searchValue /*, item */) {
     return text.toString().toLowerCase().indexOf( searchValue ) === -1;
   };
 
   $.widget("mobile.filterbar", $.mobile.widget, $.extend( {
 
       options: {
-        theme: "a",
-        placeholder: "Filter items...",
-        reveal: false,
-        callback: defaultCallback,
+        filterTheme: "a",
+        filterPlaceholder: "Filter items...",
+        filterReveal: false,
+        filterCallback: defaultfilterCallback,
         inset: false,
         enhance: true,
         target: null,
-        selector: null
+        selector: null,
+        mini: false
       },
 
       _onKeyUp: function() {
         var self = this,
           search = self._search[ 0 ],
-          o = self.options;
+          o = self.options,
+          getAttrFixed = $.mobile.getAttribute,
+          val = search.value.toLowerCase(),
+          lastval = getAttrFixed( search, "lastval", true ) + "";
+
+        if ( lastval && lastval === val ) {
+          // Execute the handler only once per value change
+          return;
+        }
         
+        // Change val as lastval for next execution
+        search.setAttribute( "data-" + $.mobile.ns + "lastval" , val );
+
         if (o.timer !== undefined) {
           window.clearTimeout(o.timer);
         }
@@ -6894,7 +6906,7 @@ $.mobile._enhancer.add( "mobile.textinput" );
         self._trigger( "beforefilter", "beforefilter", { input: search } );
           
         o.timer = window.setTimeout(function() {
-          self._filterItems( search )
+          self._filterItems( search, val, lastval )
         }, 250);
       },
 
@@ -6916,10 +6928,10 @@ $.mobile._enhancer.add( "mobile.textinput" );
         var self = this,
           o = self.options,
           filterItems = [],
-          isCustomcallback = o.callback !== defaultCallback,
+          isCustomfilterCallback = o.filterCallback !== defaultfilterCallback,
           _getFilterableItems = self._getFilterableItems();
         
-        if ( isCustomcallback || val.length < lastval.length || val.indexOf( lastval ) !== 0 ) {
+        if ( isCustomfilterCallback || val.length < lastval.length || val.indexOf( lastval ) !== 0 ) {
 
           // Custom filter callback applies or removed chars or pasted something totally different, check all items
           filterItems = _getFilterableItems;
@@ -6928,20 +6940,18 @@ $.mobile._enhancer.add( "mobile.textinput" );
           // Only chars added, not removed, only use visible subset
           filterItems = _getFilterableItems.filter( ":not(.ui-screen-hidden)" );
 
-          if ( !filterItems.length && o.reveal ) {
+          if ( !filterItems.length && o.filterReveal ) {
             filterItems = _getFilterableItems.filter( ".ui-screen-hidden" );
           }
         }
         return filterItems;
       },
       
-      _filterItems: function( search ){
+      _filterItems: function( search, val, lastval ){
         var self = this,
           el = self.element,
           o = self.options,
           getAttrFixed = $.mobile.getAttribute,
-          val = search.value.toLowerCase(),
-          lastval = getAttrFixed( search, "lastval", true ) + "",
           filterItems = self._setFilterableItems(val, lastval),
           _getFilterableItems = self._getFilterableItems(),
           childItems = false,
@@ -6949,10 +6959,7 @@ $.mobile._enhancer.add( "mobile.textinput" );
           item,
           i;
 
-        self._setOption("timer", undefined);
-        
-        // Change val as lastval for next execution
-        search.setAttribute( "data-" + $.mobile.ns + "lastval" , val );
+        self._setOption( "timer", undefined );
 
         if ( val ) {
 
@@ -6970,7 +6977,7 @@ $.mobile._enhancer.add( "mobile.textinput" );
               // New bucket!
               childItems = false;
 
-            } else if ( o.callback( itemtext, val, item ) ) {
+            } else if ( o.filterCallback( itemtext, val, item ) ) {
 
               //mark to be hidden
               item.toggleClass( "ui-filter-hidequeue" , true );
@@ -6980,10 +6987,10 @@ $.mobile._enhancer.add( "mobile.textinput" );
               childItems = true;
             }
           }
-
-          self._toggleFilterableItems( filterItems, o.reveal , true);
+          
+          self._toggleFilterableItems( filterItems, o.filterReveal , true);
         } else {
-          self._toggleFilterableItems( filterItems, o.reveal );
+          self._toggleFilterableItems( filterItems, o.filterReveal );
         }
 
         self._addFirstLastClasses( _getFilterableItems, self._getVisibles( _getFilterableItems, false ), false );
@@ -7017,11 +7024,14 @@ $.mobile._enhancer.add( "mobile.textinput" );
             "role": "search"
           }),
           search = $( "<input>", {
-            placeholder: o.placeholder
+            placeholder: o.filterPlaceholder
           })
           .attr( "data-" + $.mobile.ns + "type", "search" )
           .appendTo( wrapper )
-          .textinput();
+          .textinput({
+            theme: o.filterTheme,
+            mini: o.mini
+          });
 
         if ( o.inset ) {
           wrapper.addClass( "ui-filter-inset" );
@@ -7042,11 +7052,11 @@ $.mobile._enhancer.add( "mobile.textinput" );
           search,
           items = self._getFilterableItems();
         
-        if ( o.reveal ) {
+        if ( o.filterReveal ) {
           items.addClass( "ui-screen-hidden" );
         }
         
-        self._setOption("timer", undefined);
+        self._setOption( "timer", undefined );
 
         if (o.enhance) {
           search = self._enhance();
@@ -7063,10 +7073,16 @@ $.mobile._enhancer.add( "mobile.textinput" );
           _search: search
         });
         
-      },
-
-      refresh: function (create) {
-      
+        // NOTE: since the filter was based on the listview, some unit tests seem
+        // to listen for the initial addFirstLastClasses call when the listview 
+        // is setup (at least I cannot recreate a refreshCornerCount in Qunit
+        // without setting first and last classes on the filterable elements on
+        // create). If refresh corners is to be run on the filter, I would prefer
+        // it being solely called by the filter being triggered and not be the 
+        // "_super()-widget" calling it. So 2x input on the filter should trigger
+        // 2x addFirstLastClasses vs. currently 3x because of including the call
+        // when setting up the parent listview.
+        self._addFirstLastClasses( items, self._getVisibles( items, true ), true );
       },
 
       _setOptions: function( options ) {
