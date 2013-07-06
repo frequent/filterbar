@@ -1,6 +1,6 @@
 #### filterbar - jQuery Mobile filter widget 
 
-- Version:  0.1
+- Version:  0.1.3
 - based:    JQM 1.4pre (next branch)
 - status:   CSS and Qunit missing/need fix, still buggy.
 
@@ -24,22 +24,33 @@ for JQM to filter. For example, this should work:
   </div>
 ````
 
-Changes:  
-The wrapping `<form>` is now a wrapping `div` so filters can be included inside forms.
-Also, the `itemSelector` option can be set on multiple datasets, so it is possible to use a single filter for
+### Changes:  
+
+## 0.1.3
+- added `data-mini` option.
+- prefixed `reveal`, `placeholder`, `theme` and `callback` with **filter** for backwards compatability
+- fixed default Qunit tests, now adding more... 
+
+## 0.1.2
+- 
+
+## 0.1.1 (initial commit)
+- Wrapping `<form>` is now a wrapping `div` so filters can be included inside forms.
+- The `itemSelector` option can be set on multiple datasets, so it is possible to use a single filter for
 multiple datasets (like filtering a list in a panel and a group of icons in the content section).
 
 Options:  
 Some options are inherited from the element the filter is declard upon. 
 
 The following options can be set:
-- `data-theme` = theme to style the filter (default `a`)
-- `data-placehodler` = text to display as placeholder (default `filter items...`)
-- `data-reveal` = whether to use the normal filter or autocomplete (default `false`)
-- `data-callback` = whether a custom callback is supplied (default `false`)
+- `data-filterTheme` = theme to style the filter (default `a`)
+- `data-filterPlacehodler` = text to display as placeholder (default `filter items...`)
+- `data-filterReveal` = whether to use the normal filter or autocomplete (default `false`)
+- `data-filterCallback` = whether a custom callback is supplied (default `false`)
 - `data-inset` = whether to inset the textinput (default `true`)
 - `data-target` (NEW, class, e.g. `data-target="foo"`) = where to appended the filter
 - `data-itemSelector` (NEW, class, e.g. `data-itemSelector="foo"`) = wrapper(s) containing elements to filter.
+- `data-mini` = make the input a mini-input
 
 
 
