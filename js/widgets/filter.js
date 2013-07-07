@@ -24,8 +24,10 @@ define( [ "jquery", "./forms/textinput" ], function( jQuery ) {
         inset: false,
         enhance: true,
         target: null,
+        mini: false,
         selector: null,
-        mini: false
+        classes: "",
+        id: null
       },
 
       _onKeyUp: function() {
@@ -165,8 +167,9 @@ define( [ "jquery", "./forms/textinput" ], function( jQuery ) {
           el = this.element,
           o = self.options,
           wrapper = $( "<div>", {
-            "class": "ui-filter ",
-            "role": "search"
+            "class": o.classes + " ui-filter ",
+            "role": "search",
+            "id" : o.id || "ui-filter-" + self.uuid
           }),
           search = $( "<input>", {
             placeholder: o.filterPlaceholder
@@ -209,8 +212,7 @@ define( [ "jquery", "./forms/textinput" ], function( jQuery ) {
           search = self.element.find("input");
         }
 
-        // "reset"
-        search.attr("data-" + $.mobile.ns + "-lastval", "");
+        search.attr("data-" + $.mobile.ns + "lastval", "");
 
         self._on( search, { keyup: "_onKeyUp", change: "_onKeyUp", input: "_onKeyUp" } );
         
@@ -242,22 +244,25 @@ define( [ "jquery", "./forms/textinput" ], function( jQuery ) {
       },
       
       _setOption: function( key, value ) {
-        var self = this;
+        var self = this,
+          o = self.options,
+          wrapper = document.getElementById( o.id || "ui-filter-" + self.uuid ),
+          $input = $( wrapper ).find( "input" );
 
-        self.options[ key ] = value;
+        // always update
+        o[ key ] = value;
 
         if ( key === "disabled" ) {
-          self.widget()
+          $input
             .toggleClass( self.widgetFullName + "-disabled ui-state-disabled", !!value )
-            .attr( "aria-disabled", value );
-          self.hoverable.removeClass( "ui-state-hover" );
-          self.focusable.removeClass( "ui-state-focus" );
+            .attr( "aria-disabled", value )
+            .textinput( value ? "disable" : "enable" );
         }
         return self;
       },
       
       widget: function() {
-        return this.filterbar;
+        return this.element
       },
       
       enable: function() {
@@ -269,8 +274,11 @@ define( [ "jquery", "./forms/textinput" ], function( jQuery ) {
       }, 
       
       destroy: function() {
-        var self = this;
-        self.element.parents( ".ui-filter" ).remove();
+        var self = this,
+          o = self.options,
+          wrapper = document.getElementById( o.id || "ui-filter-" + self.uuid );
+        
+        wrapper.parentNode.removeChild( wrapper );
         self._destroy();
       }
 
