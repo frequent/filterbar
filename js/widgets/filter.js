@@ -21,13 +21,13 @@ define( [ "jquery", "./forms/textinput" ], function( jQuery ) {
         filterPlaceholder: "Filter items...",
         filterReveal: false,
         filterCallback: defaultfilterCallback,
+        classes: "",
+        id: null,
         inset: false,
         enhance: true,
         target: null,
         mini: false,
-        selector: null,
-        classes: "",
-        id: null
+        selector: null
       },
 
       _onKeyUp: function() {
@@ -115,8 +115,16 @@ define( [ "jquery", "./forms/textinput" ], function( jQuery ) {
 
           for ( i = filterItems.length - 1; i >= 0; i-- ) {
             item = $( filterItems[ i ] );
+            // NOTE: should this be cached? Would make for a nice performance
+            // boost and we can always re-parse on "refresh"?
             itemtext = getAttrFixed(filterItems[ i ], "filtertext", true) || item.text();
 
+            
+            console.log(getAttrFixed(filterItems[ i ], "filtertext", true))
+            console.log("we are using:");
+            console.log(itemtext);
+            
+            
             if ( item.is( ".ui-li-divider" ) ) {
 
               item.toggleClass( "ui-filter-hidequeue" , !childItems );
@@ -203,16 +211,18 @@ define( [ "jquery", "./forms/textinput" ], function( jQuery ) {
         if ( o.filterReveal ) {
           items.addClass( "ui-screen-hidden" );
         }
-        
+
         self._setOption( "timer", undefined );
 
         if (o.enhance) {
           search = self._enhance();
         } else {
-          search = self.element.find("input");
+          // NOTE: DIY requires data-id, otherwise how do we find the search 
+          // input. We could always wrap the filterable element (e.g. ul) in
+          // ui-filter as well, but I'm not sure I want to move elements around
+          // that much.
+          search = $( "#" + o.id ).find( "input" );
         }
-
-        search.attr("data-" + $.mobile.ns + "lastval", "");
 
         self._on( search, { keyup: "_onKeyUp", change: "_onKeyUp", input: "_onKeyUp" } );
         
@@ -278,7 +288,10 @@ define( [ "jquery", "./forms/textinput" ], function( jQuery ) {
           o = self.options,
           wrapper = document.getElementById( o.id || "ui-filter-" + self.uuid );
         
-        wrapper.parentNode.removeChild( wrapper );
+        if ( o.enhance ) {
+          wrapper.parentNode.removeChild( wrapper );
+        }
+        self._toggleFilterableItems( self._getFilterableItems(), false, false ); 
         self._destroy();
       }
 

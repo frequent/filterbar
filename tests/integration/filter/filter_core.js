@@ -1,5 +1,5 @@
 /*
- * mobile filter unit tests
+ * mobile filter unit tests - listview
  */
 
 // TODO split out into seperate test files
@@ -9,7 +9,7 @@
 
 	$.mobile.defaultTransition = "none";
 
-  module( "Listview Search Filter" );
+  module( "Filter Widget Core Functions" );
 
 	var searchFilterId = "#search-filter-test";
 
@@ -62,7 +62,7 @@
     ]);
   });
 
-	asyncTest( "event filterbarbeforefilter firing", function() {
+	asyncTest( "Event filterbarbeforefilter firing", function() {
 		var $searchPage = $( searchFilterId );
 		$.testHelper.pageSequence([
 			function() {
@@ -202,24 +202,17 @@
 		]);
 	});
 
-  module( "Custom search filter", {
+  module( "Filter Widget Custom Filter", {
 		setup: function() {
 			var self = this;
 			this._refreshCornersCount = 0;
 			this._refreshCornersFn = $.mobile.filterbar.prototype._addFirstLastClasses;
-
-			//this.startTest = function() {
-			//	return this._refreshCornersCount === 1;
-			//};
 
 			// _refreshCorners is the last method called in the filter loop
 			// so we count the number of times _refreshCorners gets invoked to stop the test
 			$.mobile.filterbar.prototype._addFirstLastClasses = function() {
 				self._refreshCornersCount += 1;
 				self._refreshCornersFn.apply( this, arguments );
-				//if ( self.startTest() ) {
-        //  start();
-				//}
 			}
 		},
 		teardown: function() {
@@ -232,13 +225,6 @@
 			filterCallbackCount = 0,
 			expectedCount = 2 * listPage.find("li").length;
 		expect( 1 );
-
-		//this.startTest = function() {
-    //  if ( this._refreshCornersCount === 3 ) {
-			//	equal( filterCallbackCount, expectedCount, "filterCallback should be called exactly "+ expectedCount +" times" );
-			//}
-			//return this._refreshCornersCount === 3;
-		//}
 
 		$.testHelper.pageSequence( [
 			function(){
@@ -306,7 +292,7 @@
     ]);
   });
 
-	module( "Search Filter with filterReveal==true" );
+	module( "Filter Widget Reveal/Autocomplete" );
 
 	asyncTest( "Filter downs results when the user enters information", 3, function() {
 		var $searchPage = $( "#search-filter-reveal-test" );
@@ -338,5 +324,274 @@
 			}
 		]);
 	});
+
+  module( "Filter Widget Configuration" );
   
+  asyncTest( "Custom id and classes are set on filter", function () {
+		$.testHelper.pageSequence( [
+      function(){
+        $.mobile.changePage( home );
+      },
+
+      function() {
+        $.mobile.changePage( "#search-custom-id-classes-test" );
+      },
+
+			function() {
+				var $page = $( ".ui-page-active" ),
+          $filter = $page.find( ".ui-filter" ),
+          $list = $page.find( "ul" );
+
+        ok($filter.hasClass( "baz" ), "filter element has custom classed set by user");
+        ok($filter.attr( "id" ) === "foo", "filter has custom id");
+
+        $list.filterbar("destroy");
+
+        ok($page.find( ".ui-filter" ).length === 0, "filter can be destroyed using custom user id");       
+        start();
+			}
+		]);
+	});
+  
+  asyncTest( "Placing the filter at a location specified by data-target", function () {
+		$.testHelper.pageSequence( [
+      function(){
+        $.mobile.changePage( home );
+      },
+
+      function() {
+        $.mobile.changePage( "#search-target-test" );
+      },
+
+			function() {
+				var $page = $( ".ui-page-active" ),
+          $filter = $page.find( ".ui-filter" ),
+          $list = $page.find( "ul" );
+
+        ok($filter.parent().hasClass( "baz" ), "filter appended to element specified by data-target")
+
+        $page.find('input').val('ac');
+        $page.find('input').trigger('change');
+				setTimeout(function() {
+          deepEqual($list.find('li.ui-screen-hidden').length, 3);
+          start();
+        }, 500);
+			}
+		]);
+	});
+
+  asyncTest( "Selector attribute allows filtering of multiple datasets", function () {
+		$.testHelper.pageSequence( [
+      function(){
+        $.mobile.changePage( home );
+      },
+
+      function() {
+        $.mobile.changePage( "#search-selector-test" );
+      },
+
+			function() {
+				var $page = $( ".ui-page-active" ),
+          $filter = $page.find( ".ui-filter" ),
+          $list_a = $page.find( "ul" ).eq(0),
+          $list_b = $page.find( "ul" ).eq(1);
+
+        $page.find('input').val('ac');
+        $page.find('input').trigger('change');
+				setTimeout(function() {
+          deepEqual($list_a.find('li.ui-screen-hidden').length, $list_b.find('li.ui-screen-hidden').length);
+          start();
+        }, 500);
+			}
+		]);
+	});
+
+  asyncTest( "Filter can be set pre-enhanced (if data-id is provided)", function () {
+		$.testHelper.pageSequence( [
+      function(){
+        $.mobile.changePage( home );
+      },
+
+      function() {
+        $.mobile.changePage( "#search-pre-enhance-test" );
+      },
+
+			function() {
+				var $page = $( ".ui-page-active" ),
+          $filter = $page.find( ".ui-filter" ),
+          $list = $page.find( "ul" ).eq(0);
+
+        $page.find('input').val('ac');
+        $page.find('input').trigger('change');
+				setTimeout(function() {
+          deepEqual(
+            $list.find('li.ui-screen-hidden').length,
+            3,
+            "Custom filter can be used for filtering"
+          );
+          $list.filterbar( "destroy" );
+          ok(
+            $page.find( ".ui-filter" ).length === 1,
+            "Pre-enhanced filter element is not removed on destroy"
+          );
+          deepEqual(
+            $list.find('li.ui-screen-hidden').length,
+            0,
+            "destroying a filter shows all elements"
+          );
+          start();
+        }, 500);
+			}
+		]);
+	});
+
+  module( "Filter Widget Methods/Options" );
+    
+  asyncTest( "Disabling, enabling text input", function () {
+		$.testHelper.pageSequence( [
+      function(){
+        $.mobile.changePage( home );
+      },
+
+      function() {
+        $.mobile.changePage( "#search-disable-test" );
+      },
+
+			function() {
+				var $page = $( ".ui-page-active" ),
+          $filter = $page.find( ".ui-filter" ),
+          $list = $page.find( "ul" ).eq(0);
+
+        $list.filterbar( "disable" );
+        
+        deepEqual(
+          $page.find('input').attr( "disabled" ),
+          "disabled",
+          "Setting disable option on widget (ul) disables filter textinput"
+        );
+       
+        $page.find('input').val('ac');
+        $page.find('input').trigger('change');
+				setTimeout(function() {
+          deepEqual(
+            $list.find('li.ui-screen-hidden').length,
+            0,
+            "Disabled filters cannot filter"
+          );
+          
+          $list.filterbar( "enable" );
+          
+          deepEqual(
+            $page.find('input').attr( "disabled" ),
+            undefined,
+            "Enabling widget also enables textinput"
+          );
+
+          $page.find('input').val('ac');
+          $page.find('input').trigger('change');
+          setTimeout(function() {
+            deepEqual(
+              $list.find('li.ui-screen-hidden').length,
+              3,
+              "Enabled filter is working again"
+            );
+            start();
+          },500);
+        }, 500);
+			}
+		]);
+	});
+
+  module( "Filter Widget Using Different Elements" );
+
+  asyncTest( "Filtering Table Rows based on Cells", function () {
+		$.testHelper.pageSequence( [
+      function(){
+        $.mobile.changePage( home );
+      },
+
+      function() {
+        $.mobile.changePage( "#search-table-test" );
+      },
+
+			function() {
+				var $page = $( ".ui-page-active" ),
+          $filter = $page.find( ".ui-filter" ),
+          $table = $page.find( "table" ).eq(0);
+          
+        $page.find('input').val('12:12');
+        $page.find('input').trigger('change');
+				setTimeout(function() {
+          deepEqual(
+            $table.find('.ui-screen-hidden').length,
+            4,
+            "Filtering table rows hides based on table cell values"
+          );
+          $page.find('input').val('');
+          $page.find('input').trigger('change');
+          setTimeout(function() {
+            deepEqual(
+              $table.find('.ui-screen-hidden').length,
+              0,
+              "Removing filter value shows all table rows again"
+            );
+            start();
+          }, 500);
+        }, 500);
+			}
+		]);
+  });
+    
+  asyncTest( "Controlgroup Search Filter", function () {
+		$.testHelper.pageSequence( [
+      function(){
+        $.mobile.changePage( home );
+      },
+
+      function() {
+        $.mobile.changePage( "#search-controlgroup-test" );
+      },
+
+			function() {
+				var $page = $( ".ui-page-active" ),
+          $filter = $page.find( ".ui-filter" ),
+          $controlgroup = $page.find( "div.helper" );
+
+        // filter
+        $page.find('input').val('ac');
+        $page.find('input').trigger('change');
+				setTimeout(function() {
+          deepEqual(
+            $controlgroup.find('.ui-screen-hidden').length,
+            3,
+            "Filtering controlgroup input/a buttons by value"
+          );
+          
+          // clear 
+          $page.find('input').val('');
+          $page.find('input').trigger('change');
+          setTimeout(function() {
+            deepEqual(
+              $controlgroup.find('.ui-screen-hidden').length,
+              0,
+              "Removing filter value shows all controlgroup buttons again"
+            );
+            
+            // filtertext!
+            $page.find('input').val('xyz');
+            $page.find('input').trigger('change');
+            setTimeout(function() {
+              deepEqual(
+                $controlgroup.find('.ui-screen-hidden').length,
+                4,
+                "Filtering controlgroup input/a buttons by data-filtertext"
+              );
+              start();
+            },500);
+          }, 500);
+        }, 500);
+			}
+		]);
+	});  
+
 })(jQuery);
