@@ -42,6 +42,35 @@
 	<link rel="stylesheet" href="../../../external/qunit.css"/>
 
 	<script src="../../swarminject.js"></script>
+	
+	<style type="text/css">
+		.ui-filter {
+			border-width: 0;
+			overflow: hidden;
+			margin: -1em -1em 1em -1em;
+		}
+		.ui-filter-inset {
+			margin: 1em -.3125em -1em;
+			background: transparent;
+		}
+		.ui-collapsible-content .ui-filter {
+			margin: -.625em -1em .625em -1em;
+			border-bottom: inherit;
+		}
+		.ui-collapsible-content .ui-filter-inset {
+			margin: -.3125em;
+			border-bottom-width: 0;
+		}
+		.ui-filter .ui-input-search {
+			margin: .3125em;
+			width: auto;
+			display: block;
+		}
+		.ui-screen-hidden {
+			display: none !important;
+		}
+	</style>
+	
 </head>
 <body>
 
@@ -169,7 +198,7 @@
 		<h1>Using custom id and classes</h1>
 	</div>
 	<div data-nstest-role="content">
-		<ul data-nstest-role="listview" data-nstest-filter="true" data-nstest-id="foo" data-nstest-classes="bar baz bam">
+		<ul data-nstest-role="listview" data-nstest-filter="true" data-nstest-id="foo" data-nstest-wrapperClass="boo" data-nstest-wrapper-class="bar baz bam">
 			<li>Acura</a></li>
 			<li>Audi</li>
 			<li>BMW</li>
@@ -444,6 +473,20 @@
 			<span data-nstest-filtertext="a">f</span>
 		</div>
 	</div>
+</div>
+
+<div id="list-inset-filter-prototype" data-nstest-theme="b">
+	<ul data-nstest-role="listview" data-nstest-filter="true">
+		<li>foo</li>
+		<li>bar</li>
+	</ul>
+</div>
+
+<div id="list-inset-filter-data-attr" data-nstest-theme="b">
+	<ul data-nstest-role="listview" data-nstest-filter="true" data-nstest-inset="true">
+		<li>foo</li>
+		<li>bar</li>
+	</ul>
 </div>
 
 </body>

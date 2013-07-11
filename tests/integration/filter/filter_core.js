@@ -224,7 +224,6 @@
 
 				$page.find('input').val('at');
 				$page.find('input').trigger('change');
-
 				setTimeout(function() {
 					deepEqual($page.find('li:jqmData(role=list-divider):hidden').length, 2);
 					deepEqual($page.find('li:jqmData(role=list-divider):hidden + li:not(:jqmData(role=list-divider)):hidden').length, 2);
@@ -404,6 +403,46 @@
 		]);
 	});
 
+	module( "Caching" );
+
+		asyncTest( "list filter is inset from prototype options value", function() {
+		$.mobile.filterbar.prototype.options.inset = true;
+		$("#list-inset-filter-prototype").page();
+
+		$.testHelper.pageSequence([
+			function() {
+				$.mobile.changePage("#list-inset-filter-prototype");
+			},
+
+			function( timedOut) {
+				ok( !timedOut );
+				deepEqual( $.mobile.activePage.find("div.ui-filter-inset").length, 1, "div is inset");
+				window.history.back();
+			},
+
+			start
+		]);
+	});
+
+	asyncTest( "list filter is inset from data attr value", function() {
+		$.mobile.listview.prototype.options.inset = false;
+		$("#list-inset-filter-data-attr").page();
+
+		$.testHelper.pageSequence([
+			function() {
+				$.mobile.changePage("#list-inset-filter-data-attr");
+			},
+
+			function( timedOut) {
+				ok( !timedOut );
+				deepEqual( $.mobile.activePage.find("div.ui-filter-inset").length, 1, "div is inset");
+				window.history.back();
+			},
+
+			start
+		]);
+	});
+
 	module( "Filter Widget Configuration" );
 	
 	asyncTest( "Custom id and classes are set on filter", function () {
@@ -421,8 +460,8 @@
 					$filter = $page.find( ".ui-filter" ),
 					$list = $page.find( "ul" );
 
-				ok($filter.hasClass( "baz" ), "filter element has custom classed set by user");
-				ok($filter.attr( "id" ) === "foo", "filter has custom id");
+				ok($filter.is( ".baz" ), "filter element has custom classed set by user");
+				//removed ok($filter.attr( "id" ) === "foo", "filter has custom id");
 
 				$list.filterbar("destroy");
 
